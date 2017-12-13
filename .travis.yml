@@ -1,0 +1,32 @@
+language: csharp
+mono: none
+dotnet: 2.0.0
+sudo: required
+dist: trusty
+
+services:
+  - docker
+
+addons:
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+    - curl
+
+script:
+  - which dotnet
+  - dotnet --info
+  - docker --version
+  - docker build -t rolfwessels/minimal-nuget-server:latest -t rolfwessels/minimal-nuget-server:v1.1.$TRAVIS_BUILD_NUMBER .
+ 
+after_success:
+  - popd
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push rolfwessels/minimal-nuget-server;
+    fi

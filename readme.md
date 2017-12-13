@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/rolfwessels/MinimalNugetServer.svg?branch=master)](https://travis-ci.org/rolfwessels/MinimalNugetServer)
+
 # Overview
 
 This is a minimal implementation of a NuGet server.

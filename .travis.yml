@@ -22,11 +22,14 @@ script:
   - which dotnet
   - dotnet --info
   - docker --version
-  - docker build -t rolfwessels/minimal-nuget-server:latest -t rolfwessels/minimal-nuget-server:v1.1.$TRAVIS_BUILD_NUMBER .
+  
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker build -t rolfwessels/minimal-nuget-server:latest -t rolfwessels/minimal-nuget-server:v1.1.$TRAVIS_BUILD_NUMBER .;
+    else
+    docker build -t rolfwessels/minimal-nuget-server:v1.1.$TRAVIS_BUILD_NUMBER-develop .;
+    fi
  
 after_success:
   - popd
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push rolfwessels/minimal-nuget-server;
-    fi
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push rolfwessels/minimal-nuget-server

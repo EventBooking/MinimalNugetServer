@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace MinimalNugetServer.Models
+﻿namespace MinimalNugetServer.Models
 {
 	public class VersionInfo
 	{
-		public Version Version { get; set; }
+		public string Version { get; set; }
 		public string ContentId { get; set; }
 	}
 }

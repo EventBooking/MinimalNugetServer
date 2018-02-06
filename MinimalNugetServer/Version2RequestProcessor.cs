@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
@@ -22,21 +21,13 @@ namespace MinimalNugetServer
 				return;
 
 			if ( path.StartsWithSegments( DownloadPrefix, out var downloadPath ) )
-			{
 				await ProcessDownload( context, downloadPath.Value );
-			}
 			else if ( path.Value == "/Search()" )
-			{
 				await ProcessSearch( context );
-			}
 			else if ( path.Value.StartsWith( "/Packages(" ) )
-			{
 				await ProcessPackages( context );
-			}
 			else if ( path.Value == "/FindPackagesById()" )
-			{
 				await FindPackage( context );
-			}
 		}
 
 		private async Task ProcessDownload( HttpContext context, string downloadPath )
@@ -126,7 +117,7 @@ namespace MinimalNugetServer
 			}
 
 			string id = null;
-			Version version = null;
+			string version = null;
 
 			var parts = path.Substring( start, end - start ).Split( ',' );
 
@@ -137,7 +128,7 @@ namespace MinimalNugetServer
 				if ( string.Equals( kv[0], "id", StringComparison.OrdinalIgnoreCase ) )
 					id = kv[1].Trim( '\'' );
 				else if ( string.Equals( kv[0], "version", StringComparison.OrdinalIgnoreCase ) )
-					Version.TryParse( kv[1].Trim( '\'' ), out version );
+					version = kv[1].Trim( '\'' );
 			}
 
 			if ( string.IsNullOrWhiteSpace( id ) || version == null )
@@ -145,8 +136,6 @@ namespace MinimalNugetServer
 				context.Response.StatusCode = 400;
 				return;
 			}
-
-			version = version.Normalize();
 
 			var contentId = MasterData.FindContentId( id, version );
 
@@ -220,7 +209,8 @@ namespace MinimalNugetServer
 						new XElement(
 							XmlElements.MProperties,
 							new XElement( XmlElements.DId, id ),
-							new XElement( XmlElements.DVersion, x.Version )
+							new XElement( XmlElements.DVersion, x.Version ),
+							new XElement( XmlElements.DDescription, "Package Description" )
 						)
 					)
 				)

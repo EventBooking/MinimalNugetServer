@@ -79,7 +79,7 @@ namespace MinimalNugetServer
 				.ToList();
 		}
 
-		public string FindContentId( string packageId, Version version )
+		public string FindContentId( string packageId, string version )
 		{
 			var package = _packages.FirstOrDefault( x => string.Equals( x.Id, packageId, StringComparison.OrdinalIgnoreCase ) );
 			var contentId = package?.Versions.FirstOrDefault( x => x.Version == version )?.ContentId;

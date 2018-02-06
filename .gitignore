@@ -16,3 +16,9 @@ MinimalNugetServer/obj/
 samples/NugetPackageConsumingApp1/packages/
 MinimalNugetServer/GitCommitInfo.cs
 
+# User-specific stuff:
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/**/contentModel.xml
+.idea/**/.name

@@ -16,7 +16,7 @@ namespace MinimalNugetServer
             MasterData = masterData;
         }
 
-        public abstract PathString Segment { get; }
+        public abstract PathString ApiPrefix { get; }
         public abstract Task ProcessRequest(HttpContext context);
     }
 }

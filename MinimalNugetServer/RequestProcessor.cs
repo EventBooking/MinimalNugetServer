@@ -6,23 +6,24 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using MinimalNugetServer.Config;
+using MinimalNugetServer.Content;
 using MinimalNugetServer.Models;
 
 namespace MinimalNugetServer
 {
-	public class Version2RequestProcessor
+	public class RequestProcessor
 	{
-		private readonly MasterData _masterData;
+		private readonly PackageManager _packageManager;
 
-		public Version2RequestProcessor( MasterData masterData )
+		public RequestProcessor( PackageManager packageManager )
 		{
-			_masterData = masterData;
+			_packageManager = packageManager;
 		}
 
 		public async Task ProcessDownload( HttpContext context )
 		{
 			var contentId = context.Request.Path.ToString().TrimStart( '/' );
-			var content = _masterData.GetContent( contentId );
+			var content = _packageManager.GetContent( contentId );
 
 			if ( content == null )
 			{
@@ -48,7 +49,7 @@ namespace MinimalNugetServer
 				return;
 			}
 
-			var packages = _masterData.Search( searchTerm, skip, take ).ToList();
+			var packages = _packageManager.Search( searchTerm, skip, take ).ToList();
 
 			var doc = new XElement(
 				XmlElements.Feed,
@@ -125,7 +126,7 @@ namespace MinimalNugetServer
 				return;
 			}
 
-			var contentId = _masterData.FindContentId( id, version );
+			var contentId = _packageManager.FindContentId( id, version );
 
 			if ( contentId == null )
 			{
@@ -175,7 +176,7 @@ namespace MinimalNugetServer
 				return;
 			}
 
-			var versions = _masterData.GetPackageVersions( id )?.ToList() ?? new List<VersionInfo>();
+			var versions = _packageManager.GetPackageVersions( id )?.ToList() ?? new List<VersionInfo>();
 
 			var doc = new XElement(
 				XmlElements.Feed,

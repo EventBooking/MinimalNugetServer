@@ -2,22 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
-using MinimalNugetServer.ContentStores;
 using MinimalNugetServer.Models;
 
-namespace MinimalNugetServer
+namespace MinimalNugetServer.Content
 {
-	public class MasterData
+	public class PackageManager
 	{
 		private readonly string _packagesPath;
 		private List<PackageInfo> _packages;
-		private readonly IContentStore _contentStore;
+		private readonly ContentStore _contentStore;
 
-		public MasterData( IConfiguration nugetConfig )
+		public PackageManager( string packagesPath )
 		{
-			_packagesPath = nugetConfig["packages"];
-			_contentStore = new LoadAllContentStore();
+			_packagesPath = packagesPath;
+			_contentStore = new ContentStore();
 			ProcessPackageFiles();
 		}
 

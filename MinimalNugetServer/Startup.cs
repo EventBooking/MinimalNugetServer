@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MinimalNugetServer.Content;
 
 namespace MinimalNugetServer
 {
@@ -19,8 +20,8 @@ namespace MinimalNugetServer
 
 		public void Configure( IApplicationBuilder app )
 		{
-			var masterData = new MasterData( _config.GetSection( "nuget" ) );
-			var requestProcessor = new Version2RequestProcessor( masterData );
+			var masterData = new PackageManager( _config["nuget:packages"] );
+			var requestProcessor = new RequestProcessor( masterData );
 
 			app.Map( "/v2/Download", builder => builder.Run( requestProcessor.ProcessDownload ) );
 			app.Map( "/v2/Search()", builder => builder.Run( requestProcessor.ProcessSearch ) );

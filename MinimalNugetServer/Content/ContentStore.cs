@@ -1,20 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace MinimalNugetServer.ContentStores
+namespace MinimalNugetServer.Content
 {
-	public class LoadNothingContentStore : IContentStore
+	public class ContentStore
 	{
 		private readonly Dictionary<string, string> _contents = new Dictionary<string, string>();
 
 		public void Add( string contentId, string filePath )
 		{
 			_contents.Add( contentId, filePath );
-		}
-
-		public void Clear()
-		{
-			_contents.Clear();
 		}
 
 		public bool TryGetValue( string contentId, out byte[] content )

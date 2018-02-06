@@ -21,9 +21,7 @@ namespace MinimalNugetServer
 
 		public async Task ProcessDownload( HttpContext context )
 		{
-			context.Request.Path.StartsWithSegments( "/v2/download", out var downloadPath );
-
-			var contentId = downloadPath.Value.TrimStart( '/' );
+			var contentId = context.Request.Path.ToString().TrimStart( '/' );
 			var content = _masterData.GetContent( contentId );
 
 			if ( content == null )
@@ -64,11 +62,11 @@ namespace MinimalNugetServer
 					new XElement(
 						XmlElements.Entry,
 						new XElement( XmlElements.Id,
-							$"{context.Request.Scheme}://{context.Request.Host}v2/Packages(Id='{pkg.Id}',Version='{pkg.LatestVersion}')" ),
+							$"{context.Request.Scheme}://{context.Request.Host}/v2/Packages(Id='{pkg.Id}',Version='{pkg.LatestVersion}')" ),
 						new XElement(
 							XmlElements.Content,
 							new XAttribute( "type", "application/zip" ),
-							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}v2/download/{pkg.LatestContentId}" )
+							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}/v2/Download/{pkg.LatestContentId}" )
 						),
 						new XElement(
 							XmlElements.MProperties,
@@ -141,11 +139,11 @@ namespace MinimalNugetServer
 				new XAttribute( XmlElements.D, XmlNamespaces.D ),
 				new XAttribute( XmlElements.Georss, XmlNamespaces.Georss ),
 				new XAttribute( XmlElements.Gml, XmlNamespaces.Gml ),
-				new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}v2/Packages(Id='{id}',Version='{version}')" ),
+				new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}/v2/Packages(Id='{id}',Version='{version}')" ),
 				new XElement(
 					XmlElements.Content,
 					new XAttribute( "type", "application/zip" ),
-					new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}v2/download/{contentId}" )
+					new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}/v2/Download/{contentId}" )
 				),
 				new XElement(
 					XmlElements.MProperties,
@@ -190,11 +188,11 @@ namespace MinimalNugetServer
 				versions.Select( x =>
 					new XElement(
 						XmlElements.Entry,
-						new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}v2/Packages(Id='{id}',Version='{x.Version}')" ),
+						new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}/v2/Packages(Id='{id}',Version='{x.Version}')" ),
 						new XElement(
 							XmlElements.Content,
 							new XAttribute( "type", "application/zip" ),
-							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}v2/download/{x.ContentId}" )
+							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}/v2/Download/{x.ContentId}" )
 						),
 						new XElement(
 							XmlElements.MProperties,

@@ -20,12 +20,11 @@ namespace MinimalNugetServer
 		public void Configure( IApplicationBuilder app )
 		{
 			var masterData = new MasterData( _config.GetSection( "nuget" ) );
-
 			var requestProcessor = new Version2RequestProcessor( masterData );
 
-			app.Map( "/v2/download", builder => builder.Run( requestProcessor.ProcessDownload ) );
+			app.Map( "/v2/Download", builder => builder.Run( requestProcessor.ProcessDownload ) );
 			app.Map( "/v2/Search()", builder => builder.Run( requestProcessor.ProcessSearch ) );
-			app.Map( "/v2/Packages(", builder => builder.Run( requestProcessor.ProcessPackages ) );
+			app.MapWhen( x => x.Request.Path.ToString().StartsWith( "/v2/Packages(" ), builder => builder.Run( requestProcessor.ProcessPackages ) );
 			app.Map( "/v2/FindPackagesById()", builder => builder.Run( requestProcessor.FindPackage ) );
 		}
 	}

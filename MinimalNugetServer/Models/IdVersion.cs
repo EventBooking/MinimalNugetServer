@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace MinimalNugetServer.Models
 {
@@ -14,7 +13,7 @@ namespace MinimalNugetServer.Models
 		{
 			var id = VersionPattern.Split( filename )[0].TrimEnd( '.' );
 			Id = id;
-			
+
 			var version = VersionPattern.Match( filename ).Value;
 			Version = version;
 		}

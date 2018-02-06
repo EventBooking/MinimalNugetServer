@@ -10,30 +10,21 @@ using MinimalNugetServer.Models;
 
 namespace MinimalNugetServer
 {
-	public class Version2RequestProcessor : RequestProcessorBase
+	public class Version2RequestProcessor
 	{
-		public override PathString ApiPrefix { get; } = new PathString( "/v2" );
-		private static readonly PathString DownloadPrefix = new PathString( "/download" );
+		private readonly MasterData _masterData;
 
-		public override async Task ProcessRequest( HttpContext context )
+		public Version2RequestProcessor( MasterData masterData )
 		{
-			if ( !context.Request.Path.StartsWithSegments( ApiPrefix, out var path ) )
-				return;
-
-			if ( path.StartsWithSegments( DownloadPrefix, out var downloadPath ) )
-				await ProcessDownload( context, downloadPath.Value );
-			else if ( path.Value == "/Search()" )
-				await ProcessSearch( context );
-			else if ( path.Value.StartsWith( "/Packages(" ) )
-				await ProcessPackages( context );
-			else if ( path.Value == "/FindPackagesById()" )
-				await FindPackage( context );
+			_masterData = masterData;
 		}
 
-		private async Task ProcessDownload( HttpContext context, string downloadPath )
+		public async Task ProcessDownload( HttpContext context )
 		{
-			var contentId = downloadPath.TrimStart( '/' );
-			var content = MasterData.GetContent( contentId );
+			context.Request.Path.StartsWithSegments( "/v2/download", out var downloadPath );
+
+			var contentId = downloadPath.Value.TrimStart( '/' );
+			var content = _masterData.GetContent( contentId );
 
 			if ( content == null )
 			{
@@ -46,19 +37,20 @@ namespace MinimalNugetServer
 			await context.Response.Body.WriteAsync( content, 0, content.Length );
 		}
 
-		private async Task ProcessSearch( HttpContext context )
+		public async Task ProcessSearch( HttpContext context )
 		{
-			var query = context.Request.Query;
-			var searchTerm = query.GetFirst( "searchTerm", string.Empty ).Trim( '\'' );
+			var query = context.Request.Query.ToDictionary( x => x.Key, x => x.Value.First() );
 
-			if ( !int.TryParse( query.GetFirst( "$skip", string.Empty ), out var skip )
-			     || !int.TryParse( query.GetFirst( "$top", string.Empty ), out var take ) )
+			var searchTerm = query["searchTerm"]?.Trim( '\'' ) ?? string.Empty;
+
+			if ( !int.TryParse( query["$skip"] ?? string.Empty, out var skip )
+			     || !int.TryParse( query["$top"] ?? string.Empty, out var take ) )
 			{
 				context.Response.StatusCode = 400;
 				return;
 			}
 
-			var packages = MasterData.Search( searchTerm, skip, take ).ToList();
+			var packages = _masterData.Search( searchTerm, skip, take ).ToList();
 
 			var doc = new XElement(
 				XmlElements.Feed,
@@ -72,11 +64,11 @@ namespace MinimalNugetServer
 					new XElement(
 						XmlElements.Entry,
 						new XElement( XmlElements.Id,
-							$"{context.Request.Scheme}://{context.Request.Host}{ApiPrefix}/Packages(Id='{pkg.Id}',Version='{pkg.LatestVersion}')" ),
+							$"{context.Request.Scheme}://{context.Request.Host}v2/Packages(Id='{pkg.Id}',Version='{pkg.LatestVersion}')" ),
 						new XElement(
 							XmlElements.Content,
 							new XAttribute( "type", "application/zip" ),
-							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}{ApiPrefix}/download/{pkg.LatestContentId}" )
+							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}v2/download/{pkg.LatestContentId}" )
 						),
 						new XElement(
 							XmlElements.MProperties,
@@ -94,7 +86,7 @@ namespace MinimalNugetServer
 			await context.Response.Body.WriteAsync( bytes, 0, bytes.Length );
 		}
 
-		private async Task ProcessPackages( HttpContext context )
+		public async Task ProcessPackages( HttpContext context )
 		{
 			var path = Uri.UnescapeDataString( context.Request.Path.Value );
 
@@ -102,7 +94,6 @@ namespace MinimalNugetServer
 			if ( start == -1 )
 			{
 				context.Response.StatusCode = 400;
-
 				return;
 			}
 
@@ -112,7 +103,6 @@ namespace MinimalNugetServer
 			if ( end == -1 )
 			{
 				context.Response.StatusCode = 400;
-
 				return;
 			}
 
@@ -137,7 +127,7 @@ namespace MinimalNugetServer
 				return;
 			}
 
-			var contentId = MasterData.FindContentId( id, version );
+			var contentId = _masterData.FindContentId( id, version );
 
 			if ( contentId == null )
 			{
@@ -151,11 +141,11 @@ namespace MinimalNugetServer
 				new XAttribute( XmlElements.D, XmlNamespaces.D ),
 				new XAttribute( XmlElements.Georss, XmlNamespaces.Georss ),
 				new XAttribute( XmlElements.Gml, XmlNamespaces.Gml ),
-				new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}{ApiPrefix}/Packages(Id='{id}',Version='{version}')" ),
+				new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}v2/Packages(Id='{id}',Version='{version}')" ),
 				new XElement(
 					XmlElements.Content,
 					new XAttribute( "type", "application/zip" ),
-					new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}{ApiPrefix}/download/{contentId}" )
+					new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}v2/download/{contentId}" )
 				),
 				new XElement(
 					XmlElements.MProperties,
@@ -171,7 +161,7 @@ namespace MinimalNugetServer
 			await context.Response.Body.WriteAsync( bytes, 0, bytes.Length );
 		}
 
-		private async Task FindPackage( HttpContext context )
+		public async Task FindPackage( HttpContext context )
 		{
 			var strings = context.Request.Query["id"];
 			if ( strings.Count == 0 )
@@ -187,7 +177,7 @@ namespace MinimalNugetServer
 				return;
 			}
 
-			var versions = MasterData.GetPackageVersions( id )?.ToList() ?? new List<VersionInfo>();
+			var versions = _masterData.GetPackageVersions( id )?.ToList() ?? new List<VersionInfo>();
 
 			var doc = new XElement(
 				XmlElements.Feed,
@@ -200,11 +190,11 @@ namespace MinimalNugetServer
 				versions.Select( x =>
 					new XElement(
 						XmlElements.Entry,
-						new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}{ApiPrefix}/Packages(Id='{id}',Version='{x.Version}')" ),
+						new XElement( XmlElements.Id, $"{context.Request.Scheme}://{context.Request.Host}v2/Packages(Id='{id}',Version='{x.Version}')" ),
 						new XElement(
 							XmlElements.Content,
 							new XAttribute( "type", "application/zip" ),
-							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}{ApiPrefix}/download/{x.ContentId}" )
+							new XAttribute( "src", $"{context.Request.Scheme}://{context.Request.Host}v2/download/{x.ContentId}" )
 						),
 						new XElement(
 							XmlElements.MProperties,

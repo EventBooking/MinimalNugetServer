@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 
 namespace MinimalNugetServer.Config
-{
+{ 
 	public static class XmlElements
 	{
 		public static readonly XName Feed = XmlNamespaces.Xmlns + "feed";

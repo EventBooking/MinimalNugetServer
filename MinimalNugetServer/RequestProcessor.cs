@@ -215,11 +215,22 @@ namespace MinimalNugetServer
 
 		public Task PushPackage( HttpContext context )
 		{
+			if ( context.Request.Method.ToLower() != "put" )
+			{
+				context.Response.StatusCode = 400;
+				return Task.CompletedTask;
+			}
+			
 			var fileName = context.Request.Path.ToString().Trim( '/' );
-			var file = context.Request.Form.Files.First();
+			var file = context.Request.Form.Files.FirstOrDefault();
+
+			if ( string.IsNullOrWhiteSpace( fileName ) || file == null )
+			{
+				context.Response.StatusCode = 400;
+				return Task.CompletedTask;
+			}
 
 			_packageManager.AddPackage( fileName, file.OpenReadStream() );
-
 			context.Response.StatusCode = 204;
 			return Task.CompletedTask;
 		}

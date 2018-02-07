@@ -40,21 +40,59 @@ namespace MinimalNugetServer.Content
 			return matches;
 		}
 
+		public void AddPackage( string fileName, Stream stream )
+		{
+			var idVersion = new IdVersion( Path.GetFileNameWithoutExtension( fileName ) );
+			var filePath = Path.Combine( _packagesPath, fileName );
+			var version = new VersionInfo
+			{
+				ContentId = ( (uint) filePath.GetHashCode() ).ToString(),
+				Version = idVersion.Version
+			};
+
+			using ( var fs = new FileStream( filePath, FileMode.Create, FileAccess.Write, FileShare.None ) )
+			{
+				stream.CopyTo( fs );
+			}
+			_contentStore.Add( version.ContentId, filePath );
+			
+			var package = _packages.FirstOrDefault( x => x.Id == idVersion.Id );
+			if ( package == null )
+			{
+				package = new PackageInfo
+				{
+					Id = idVersion.Id,
+					Versions = new List<VersionInfo> { version },
+					LatestContentId = version.ContentId,
+					LatestVersion = version.Version
+				};
+
+				_packages.Add( package );
+			}
+			else
+			{
+				// TODO: potential issue here -- how to get the latest version?
+				package.Versions = package.Versions.Concat( new[] { version } ).OrderBy( x => x.Version ).ToList();
+				package.LatestContentId = package.Versions.Last().ContentId;
+				package.LatestVersion = package.Versions.Last().Version;
+			}
+		}
+
 		private void ProcessPackageFiles()
 		{
 			var filePaths = Directory.GetFiles( _packagesPath, "*.nupkg", SearchOption.AllDirectories )
 				.Where( x => !x.EndsWith( ".symbols.nupkg" ) )
 				.ToList();
 
-			var groups = filePaths.Select( path =>
+			var groups = filePaths.Select( filePath =>
 				{
-					var idVersion = new IdVersion( Path.GetFileNameWithoutExtension( path ) );
+					var idVersion = new IdVersion( Path.GetFileNameWithoutExtension( filePath ) );
 					return new
 					{
 						idVersion.Id,
 						idVersion.Version,
-						FilePath = path,
-						ContentId = ( (uint) path.GetHashCode() ).ToString()
+						FilePath = filePath,
+						ContentId = ( (uint) filePath.GetHashCode() ).ToString()
 					};
 				} )
 				.GroupBy( x => x.Id )
@@ -64,6 +102,7 @@ namespace MinimalNugetServer.Content
 
 			_packages = groups.Select( group =>
 				{
+					// TODO: potential issue here -- how to get the latest version?
 					var versions = group.Select( x => new VersionInfo { Version = x.Version, ContentId = x.ContentId } ).OrderBy( x => x.Version ).ToList();
 					return new PackageInfo
 					{

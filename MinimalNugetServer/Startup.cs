@@ -27,6 +27,7 @@ namespace MinimalNugetServer
 			app.Map( "/v2/Search()", builder => builder.Run( requestProcessor.ProcessSearch ) );
 			app.MapWhen( x => x.Request.Path.ToString().StartsWith( "/v2/Packages(" ), builder => builder.Run( requestProcessor.ProcessPackages ) );
 			app.Map( "/v2/FindPackagesById()", builder => builder.Run( requestProcessor.FindPackage ) );
+			app.Map( "/v2/Push", builder => builder.Run( requestProcessor.PushPackage ) );
 		}
 	}
 }

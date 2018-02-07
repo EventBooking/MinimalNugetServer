@@ -15,6 +15,7 @@ namespace MinimalNugetServer.Config
 		public static readonly XName DId = XmlNamespaces.D + "Id";
 		public static readonly XName DVersion = XmlNamespaces.D + "Version";
 		public static readonly XName DDescription = XmlNamespaces.D + "Description";
+		public static readonly XName DDependencies = XmlNamespaces.D + "Dependencies";
 
 		public static readonly XName Baze = XNamespace.Xmlns + "base";
 		public static readonly XName M = XNamespace.Xmlns + "m";

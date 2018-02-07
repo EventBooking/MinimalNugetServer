@@ -199,7 +199,8 @@ namespace MinimalNugetServer
 							XmlElements.MProperties,
 							new XElement( XmlElements.DId, id ),
 							new XElement( XmlElements.DVersion, x.Version ),
-							new XElement( XmlElements.DDescription, "Package Description" )
+							new XElement( XmlElements.DDescription, "Package Description" ),
+							new XElement( XmlElements.DDependencies )
 						)
 					)
 				)
@@ -210,6 +211,17 @@ namespace MinimalNugetServer
 			context.Response.StatusCode = 200;
 			context.Response.ContentType = "application/xml";
 			await context.Response.Body.WriteAsync( bytes, 0, bytes.Length );
+		}
+
+		public Task PushPackage( HttpContext context )
+		{
+			var fileName = context.Request.Path.ToString().Trim( '/' );
+			var file = context.Request.Form.Files.First();
+
+			_packageManager.AddPackage( fileName, file.OpenReadStream() );
+
+			context.Response.StatusCode = 204;
+			return Task.CompletedTask;
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace MinimalNugetServer
 
 		public void Configure( IApplicationBuilder app )
 		{
-			var masterData = new PackageManager( _config["nuget:packages"] );
+			var masterData = new PackageManager( _config["MinimalNugetServer:Packages"] );
 			var requestProcessor = new RequestProcessor( masterData );
 
 			app.Map( "/v2/Download", builder => builder.Run( requestProcessor.ProcessDownload ) );

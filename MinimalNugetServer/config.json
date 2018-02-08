@@ -1,5 +1,5 @@
 {
-  "nuget": {
-    "packages": "C:\\nuget_server_local"
+  "MinimalNugetServer": {
+    "Packages": "/nuget"
   }
 }

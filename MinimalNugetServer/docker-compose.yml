@@ -1,0 +1,14 @@
+version: '3'
+services:
+  minimal.nuget.server:
+    build: .
+    image: minimal.nuget.server:dev
+    container_name: minimal.nuget.server
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:3000
+      - MinimalNugetServer__Packages=/nuget
+    ports:
+      - "3000:3000"
+    volumes:
+      - c:/nuget_server_local:/nuget

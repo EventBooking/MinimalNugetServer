@@ -21,7 +21,7 @@ namespace MinimalNugetServer
 					config.SetBasePath( Directory.GetCurrentDirectory() )
 						.AddEnvironmentVariables()
 						.AddEnvironmentVariables( "NUGET_SERVER_" )
-						.AddJsonFile( "config.json", false );
+						.AddJsonFile( "config.json", true );
 				} )
 				.Build();
 		}

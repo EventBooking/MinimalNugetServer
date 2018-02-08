@@ -6,9 +6,13 @@ MinimalNugetServer uses the Nuget v2 API to support listing/installing/updating/
 
 Supported clients are Visual Studio 2017, Rider, and the .NET Core 2 CLI.
 
-No API key is required to push. Use the following source URL to push:
+When targeting the nuget server, use the following source URL (include trailing `/`):
 
-`http://<host>/v2/push/<package-name-with-version.nupkg>`
+`http://<host>:3000/v2/`
+
+No API key is required to push. Use the following source URL to push via `dotnet nuget push`:
+
+`http://<host>:3000/v2/push/<package-name-with-version.nupkg>`
 
 ## Building docker environment
 

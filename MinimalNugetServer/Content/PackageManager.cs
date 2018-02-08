@@ -50,7 +50,7 @@ namespace MinimalNugetServer.Content
 				Version = idVersion.Version
 			};
 
-			using ( var fs = new FileStream( filePath, FileMode.Create, FileAccess.Write, FileShare.None ) )
+			using ( var fs = new FileStream( filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None ) )
 			{
 				stream.CopyTo( fs );
 			}
@@ -71,8 +71,7 @@ namespace MinimalNugetServer.Content
 			}
 			else
 			{
-				// TODO: potential issue here -- how to get the latest version?
-				package.Versions = package.Versions.Concat( new[] { version } ).OrderBy( x => x.Version ).ToList();
+				package.Versions = package.Versions.Concat( new[] { version } ).OrderBy( x => x, new VersionInfoComparer() ).ToList();
 				package.LatestContentId = package.Versions.Last().ContentId;
 				package.LatestVersion = package.Versions.Last().Version;
 			}
@@ -102,8 +101,11 @@ namespace MinimalNugetServer.Content
 
 			_packages = groups.Select( group =>
 				{
-					// TODO: potential issue here -- how to get the latest version?
-					var versions = group.Select( x => new VersionInfo { Version = x.Version, ContentId = x.ContentId } ).OrderBy( x => x.Version ).ToList();
+					var versions = group
+						.Select( x => new VersionInfo { Version = x.Version, ContentId = x.ContentId } )
+						.OrderBy( x => x, new VersionInfoComparer() )
+						.ToList();
+					
 					return new PackageInfo
 					{
 						Id = group.Key,
